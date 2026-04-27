@@ -511,9 +511,17 @@ struct MessageBubble: View {
                         // 打字指示器
                         TypingIndicator()
                     } else {
-                        Text(markdownAttributed(message.content))
-                            .textSelection(.enabled)
-                            .lineSpacing(4)
+                        VStack(alignment: .leading, spacing: 10) {
+                            ForEach(Array(message.content.components(separatedBy: "\n\n").enumerated()), id: \.offset) { _, paragraph in
+                                let trimmed = paragraph.trimmingCharacters(in: .whitespacesAndNewlines)
+                                if !trimmed.isEmpty {
+                                    Text(markdownAttributed(trimmed))
+                                        .textSelection(.enabled)
+                                        .lineSpacing(4)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                            }
+                        }
                     }
                     if message.isStreaming && !message.content.isEmpty {
                         // 流式光标

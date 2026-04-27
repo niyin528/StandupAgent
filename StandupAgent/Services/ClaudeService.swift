@@ -45,24 +45,7 @@ class ClaudeService: ObservableObject {
 
     风格：直接、友好、有点幽默，不要太正式。用中文回复。
 
-    【格式要求（非常重要，必须严格遵守）】
-    - 每一个事项/段落必须独占一行，行与行之间用空行分隔
-    - 绝对不要把多个事项写在同一行，不管中间有没有 emoji 或符号
-    - 不要用 "———" "---" 或其他符号当分隔符
-    - emoji 只能放在行首，不能用来在同一行里隔开不同事项
-    - 列表项格式：每条前面加 "1." "2." 或 "- "，每条占一行
-    - 关键信息用 **加粗** 强调
-    - 每条回复不超过 8 行
-
-    正确示例：
-    1. 医药方向准备
-    上午主力，**交付物**：拆 JD
-
-    2. 新加坡 Follow-up Email
-    午饭前后，30 分钟搞定
-
-    错误示例（禁止）：
-    🥇 1. 医药方向 **时间**：上午 🥈 2. Email **时间**：午饭前
+    格式：关键信息用 **加粗** 强调。
     """
 
     // 流式发送（真正的 streaming，使用 URLSessionDataDelegate）
@@ -211,17 +194,12 @@ class ClaudeService: ObservableObject {
                msg.contains("network") || msg.contains("timeout")
     }
 
-    private let formatReminder = """
-
-【回复格式强制要求】每个事项必须单独一行，行间用空行隔开，禁止把多件事写在同一行里。
-"""
-
     private func buildClaudeRequest(apiKey: String, model: String, messages: [ChatMessage], context: String) -> URLRequest {
         var apiMessages: [[String: Any]] = []
         for (i, msg) in messages.enumerated() {
             var textContent = msg.content
             if i == 0 && msg.role == .user {
-                textContent = "【今日上下文】\n\(context)\(formatReminder)\n\n---\n\(msg.content)"
+                textContent = "【今日上下文】\n\(context)\n\n---\n\(msg.content)"
             }
             if msg.role == .user && !msg.images.isEmpty {
                 var parts: [[String: Any]] = msg.images.map { img in
@@ -267,7 +245,7 @@ class ClaudeService: ObservableObject {
         for (i, msg) in messages.enumerated() {
             var textContent = msg.content
             if i == 0 && msg.role == .user {
-                textContent = "【今日上下文】\n\(context)\(formatReminder)\n\n---\n\(msg.content)"
+                textContent = "【今日上下文】\n\(context)\n\n---\n\(msg.content)"
             }
             if msg.role == .user && !msg.images.isEmpty {
                 var parts: [[String: Any]] = msg.images.map { img in
@@ -320,7 +298,7 @@ class ClaudeService: ObservableObject {
         for (i, msg) in messages.enumerated() {
             var textContent = msg.content
             if i == 0 && msg.role == .user {
-                textContent = "【系统指令】\n\(systemPrompt)\n\n【今日上下文】\n\(context)\(formatReminder)\n\n---\n\(msg.content)"
+                textContent = "【系统指令】\n\(systemPrompt)\n\n【今日上下文】\n\(context)\n\n---\n\(msg.content)"
             }
             if msg.role == .user && !msg.images.isEmpty {
                 var parts: [[String: Any]] = msg.images.map { img in
