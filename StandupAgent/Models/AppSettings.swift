@@ -18,7 +18,7 @@ enum LLMProvider: String, CaseIterable {
         switch self {
         case .claude:
             return [
-                "claude-opus-4-6",
+                "claude-opus-4-7",
                 "claude-sonnet-4-6",
                 "claude-4-opus",
                 "claude-4-sonnet",
