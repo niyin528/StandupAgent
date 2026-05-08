@@ -20,26 +20,27 @@ enum LLMProvider: String, CaseIterable {
             return [
                 "claude-opus-4-7",
                 "claude-sonnet-4-6",
-                "claude-4-opus",
-                "claude-4-sonnet",
-                "claude-4-haiku",
+                "claude-opus-4-6",
+                "claude-sonnet-4-5",
                 "claude-opus-4-5",
+                "claude-haiku-4-5",
             ]
         case .openAI:
             return [
-                "gpt-5.4",
-                "gpt-5.4-mini",
-                "o3",
-                "o4-mini",
                 "gpt-4.1",
+                "gpt-4.1-mini",
+                "gpt-4o",
+                "gpt-4o-mini",
+                "o4-mini",
+                "o3",
             ]
         case .gemini:
             return [
-                "gemini-3.1-pro-preview",
-                "gemini-3-flash-preview",
-                "gemini-3.1-flash-lite-preview",
                 "gemini-2.5-pro",
                 "gemini-2.5-flash",
+                "gemini-2.0-flash",
+                "gemini-1.5-pro",
+                "gemini-1.5-flash",
             ]
         }
     }
@@ -147,8 +148,8 @@ class AppSettings: ObservableObject {
         geminiApiKey = defaults.string(forKey: "geminiApiKey") ?? ""
 
         claudeModel = defaults.string(forKey: "claudeModel") ?? "claude-sonnet-4-6"
-        openAIModel = defaults.string(forKey: "openAIModel") ?? "gpt-5.4"
-        geminiModel = defaults.string(forKey: "geminiModel") ?? "gemini-3.1-pro-preview"
+        openAIModel = defaults.string(forKey: "openAIModel") ?? "gpt-4.1"
+        geminiModel = defaults.string(forKey: "geminiModel") ?? "gemini-2.5-flash"
 
         isReminderEnabled = UserDefaults.standard.object(forKey: "isReminderEnabled") as? Bool ?? true
         reminderHour = UserDefaults.standard.object(forKey: "reminderHour") as? Int ?? 9
@@ -179,10 +180,10 @@ class AppSettings: ObservableObject {
             claudeModel = "claude-sonnet-4-6"
         }
         if !LLMProvider.openAI.availableModels.contains(openAIModel) {
-            openAIModel = "gpt-5.4"
+            openAIModel = "gpt-4.1"
         }
         if !LLMProvider.gemini.availableModels.contains(geminiModel) {
-            geminiModel = "gemini-3.1-pro-preview"
+            geminiModel = "gemini-2.5-flash"
         }
     }
 
