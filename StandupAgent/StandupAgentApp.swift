@@ -69,7 +69,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCenterDele
     func setupMenuBar() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         if let button = statusItem?.button {
-            button.image = NSImage(systemSymbolName: "cup.and.saucer.fill", accessibilityDescription: "Standup")
+            button.image = NSImage(systemSymbolName: "person.2.fill", accessibilityDescription: "Standup")
         }
 
         let menu = NSMenu()
