@@ -449,11 +449,11 @@ class StreamDelegate: NSObject, URLSessionDataDelegate {
                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let err = json["error"] as? [String: Any],
                let message = err["message"] as? String {
-                msg = "HTTP \(code): \(message)"
+                msg = "HTTP \(code): \(message)" + (code == 403 ? "\n⚠️ 403 通常表示访问被拦截，请检查 VPN 是否已开启" : "")
             } else if !detail.isEmpty {
-                msg = "HTTP \(code): \(String(detail.prefix(200)))"
+                msg = "HTTP \(code): \(String(detail.prefix(200)))" + (code == 403 ? "\n⚠️ 403 通常表示访问被拦截，请检查 VPN 是否已开启" : "")
             } else {
-                msg = "HTTP \(code)"
+                msg = "HTTP \(code)" + (code == 403 ? "\n⚠️ 403 通常表示访问被拦截，请检查 VPN 是否已开启" : "")
             }
             DispatchQueue.main.async { self.onError(msg, nil) }
         } else if let error = error {
