@@ -23,6 +23,12 @@
   - **ChatGPT**：在 [platform.openai.com](https://platform.openai.com) 获取
   - **Gemini**：在 [aistudio.google.com](https://aistudio.google.com) 获取
 
+首次运行后：
+1. 点击菜单栏的 ☕ 图标 → **设置**
+2. 选择 AI 服务（Claude / ChatGPT / Gemini），填入对应的 API Key
+3. 设置早会时间（默认 09:00）
+4. 在「本周目标」标签页添加这周要做的事
+
 ## 快速开始
 
 ```bash
@@ -33,12 +39,6 @@ open StandupAgent.xcodeproj
 
 # 3. ⌘R 运行
 ```
-
-首次运行后：
-1. 点击菜单栏的 ☕ 图标 → **设置**
-2. 选择 AI 服务（Claude / ChatGPT / Gemini），填入对应的 API Key
-3. 设置早会时间（默认 09:00）
-4. 在「本周目标」标签页添加这周要做的事
 
 ## 项目结构
 
@@ -119,6 +119,12 @@ A menu bar standup reminder + AI-guided conversation app for macOS, supporting C
   - **ChatGPT**: get one at [platform.openai.com](https://platform.openai.com)
   - **Gemini**: get one at [aistudio.google.com](https://aistudio.google.com)
 
+On first launch:
+1. Click the ☕ icon in the menu bar → **Settings**
+2. Choose your AI provider (Claude / ChatGPT / Gemini) and enter the corresponding API Key
+3. Set your standup time (default: 09:00)
+4. Add this week's goals in the "Weekly Goals" tab
+
 ## Quick Start
 
 ```bash
@@ -129,12 +135,6 @@ open StandupAgent.xcodeproj
 
 # 3. Press ⌘R to run
 ```
-
-On first launch:
-1. Click the ☕ icon in the menu bar → **Settings**
-2. Choose your AI provider (Claude / ChatGPT / Gemini) and enter the corresponding API Key
-3. Set your standup time (default: 09:00)
-4. Add this week's goals in the "Weekly Goals" tab
 
 ## Project Structure
 
