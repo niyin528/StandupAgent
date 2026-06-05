@@ -1,6 +1,22 @@
 # macOS
 .DS_Store
 
+# Secrets & user-filled data (API keys, weekly goals, etc.)
+# 这些信息存在设备本地 UserDefaults / SwiftData，正常不会进入仓库。
+# 以下规则用于防止意外提交本地导出或密钥文件。
+Secrets.swift
+Secrets.plist
+*.secret
+*.secrets
+.env
+.env.*
+Config.local.xcconfig
+*.local.xcconfig
+**/UserData/
+*.userdata.json
+weeklyGoals*.json
+apiKeys*.json
+
 # Xcode
 build/
 DerivedData/
