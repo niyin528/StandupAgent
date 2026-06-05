@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: macos-latest
-    timeout-minutes: 60
+    timeout-minutes: 350
 
     steps:
       - name: Checkout
@@ -71,9 +71,9 @@ jobs:
             --output-format json | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
           echo "Submission ID: $SUBMISSION_ID"
 
-          # Poll the submission status until done (up to ~40 minutes)
+          # Poll the submission status until done (up to ~5.5 hours)
           STATUS="In Progress"
-          for i in $(seq 1 80); do
+          for i in $(seq 1 680); do
             STATUS=$(xcrun notarytool info "$SUBMISSION_ID" \
               --apple-id "$APPLE_ID" \
               --password "$APPLE_APP_PASSWORD" \
