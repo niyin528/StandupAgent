@@ -2,6 +2,8 @@
 
 [![Download](https://img.shields.io/github/v/release/niyin528/StandupAgent?label=下载最新版&logo=apple)](https://github.com/niyin528/StandupAgent/releases/latest)
 
+早上起来头脑一片空白？打开它，AI 会自动把你的本周目标拆解成今天能做的事，帮你立刻找回状态、专注行动。
+
 一个住在菜单栏的早会提醒 + AI 引导对话 App，支持 Claude、ChatGPT、Gemini 多种 AI 服务。
 
 ## 功能
@@ -95,6 +97,8 @@ killall StandupAgent 2>/dev/null; xcodebuild -project StandupAgent.xcodeproj -sc
 ---
 
 # Standup Agent — Mac App
+
+Ever wake up with a blank mind, not sure where to begin? Open this app and the AI breaks your weekly goals down into concrete things you can actually do today — so you can get focused and moving in seconds.
 
 A menu bar standup reminder + AI-guided conversation app for macOS, supporting Claude, ChatGPT, and Gemini.
 
