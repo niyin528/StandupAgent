@@ -4,7 +4,7 @@
 
 早上起来头脑一片空白？打开它，AI 会自动把你的本周目标拆解成今天能做的事，帮你立刻找回状态、专注行动。
 
-一个住在菜单栏的早会提醒 + AI 引导对话 App，支持 Claude、ChatGPT、Gemini 多种 AI 服务。
+一个住在菜单栏的早会提醒 + AI 引导对话 App，支持 Claude、ChatGPT、Gemini、DeepSeek 多种 AI 服务。
 
 ## 功能
 
@@ -12,7 +12,7 @@
 - 🔔 **定时系统通知**：到点提醒，支持「现在开始」或「推迟 10 分钟」
 - 📝 **本周目标管理**：在设置里写下这周要做什么，AI 记住它们
 - 🤖 **AI 早会引导**：开会时 AI 主动帮你聚焦今天的优先事项，流式回复
-- 🔀 **多 AI 服务支持**：可在 Claude、ChatGPT（OpenAI）、Gemini 之间自由切换
+- 🔀 **多 AI 服务支持**：可在 Claude、ChatGPT（OpenAI）、Gemini、DeepSeek 之间自由切换
 
 ## 环境要求
 
@@ -21,11 +21,12 @@
   - **Claude**：在 [console.anthropic.com](https://console.anthropic.com) 获取
   - **ChatGPT**：在 [platform.openai.com](https://platform.openai.com) 获取
   - **Gemini**：在 [aistudio.google.com](https://aistudio.google.com) 获取
+  - **DeepSeek**：在 [platform.deepseek.com](https://platform.deepseek.com) 获取
 - Xcode 15+ （如需从源代码编译）
 
 首次运行后：
 1. 点击菜单栏的 ☕ 图标 → **设置**
-2. 选择 AI 服务（Claude / ChatGPT / Gemini），填入对应的 API Key
+2. 选择 AI 服务（Claude / ChatGPT / Gemini / DeepSeek），填入对应的 API Key
 3. 设置早会时间（默认 09:00）
 4. 在「本周目标」标签页添加这周要做的事
 
@@ -48,7 +49,7 @@ StandupAgent/
 ├── Models/
 │   └── AppSettings.swift      # 设置存储、WeeklyGoal 模型、Context 构建
 ├── Services/
-│   └── ClaudeService.swift    # AI API 调用（支持 Claude / OpenAI / Gemini，SSE 流式）
+│   └── ClaudeService.swift    # AI API 调用（支持 Claude / OpenAI / Gemini / DeepSeek，SSE 流式）
 └── Views/
     ├── StandupView.swift       # 早会对话界面
     └── SettingsView.swift      # 设置 + 目标管理界面
@@ -71,7 +72,7 @@ private let systemPrompt = """
 系统偏好设置 → 通知与专注模式 → 找到 StandupAgent → 允许通知
 
 **API 调用失败？**
-检查所选 AI 服务的 API Key 是否正确，以及网络是否能访问对应的 API 端点（`api.anthropic.com` / `api.openai.com` / `generativelanguage.googleapis.com`）
+检查所选 AI 服务的 API Key 是否正确，以及网络是否能访问对应的 API 端点（`api.anthropic.com` / `api.openai.com` / `generativelanguage.googleapis.com` / `api.deepseek.com`）
 
 **想让 App 开机自启？**
 系统设置 → 通用 → 登录项目 → 添加 StandupAgent.app
@@ -100,7 +101,7 @@ killall StandupAgent 2>/dev/null; xcodebuild -project StandupAgent.xcodeproj -sc
 
 Ever wake up with a blank mind, not sure where to begin? Open this app and the AI breaks your weekly goals down into concrete things you can actually do today — so you can get focused and moving in seconds.
 
-A menu bar standup reminder + AI-guided conversation app for macOS, supporting Claude, ChatGPT, and Gemini.
+A menu bar standup reminder + AI-guided conversation app for macOS, supporting Claude, ChatGPT, Gemini, and DeepSeek.
 
 ## Features
 
@@ -108,7 +109,7 @@ A menu bar standup reminder + AI-guided conversation app for macOS, supporting C
 - 🔔 **Scheduled system notifications** — reminds you at standup time with "Start Now" or "Snooze 10 min"
 - 📝 **Weekly goal tracking** — write down what you want to accomplish this week; the AI keeps them in context
 - 🤖 **AI-guided standup** — the AI proactively helps you focus on today's priorities with streaming responses
-- 🔀 **Multi-provider support** — freely switch between Claude, ChatGPT (OpenAI), and Gemini
+- 🔀 **Multi-provider support** — freely switch between Claude, ChatGPT (OpenAI), Gemini, and DeepSeek
 
 ## Requirements
 
@@ -117,11 +118,12 @@ A menu bar standup reminder + AI-guided conversation app for macOS, supporting C
   - **Claude**: get one at [console.anthropic.com](https://console.anthropic.com)
   - **ChatGPT**: get one at [platform.openai.com](https://platform.openai.com)
   - **Gemini**: get one at [aistudio.google.com](https://aistudio.google.com)
+  - **DeepSeek**: get one at [platform.deepseek.com](https://platform.deepseek.com)
 - Xcode 15+ (if building from source)
 
 On first launch:
 1. Click the ☕ icon in the menu bar → **Settings**
-2. Choose your AI provider (Claude / ChatGPT / Gemini) and enter the corresponding API Key
+2. Choose your AI provider (Claude / ChatGPT / Gemini / DeepSeek) and enter the corresponding API Key
 3. Set your standup time (default: 09:00)
 4. Add this week's goals in the "Weekly Goals" tab
 
@@ -144,7 +146,7 @@ StandupAgent/
 ├── Models/
 │   └── AppSettings.swift      # Settings storage, WeeklyGoal model, context builder
 ├── Services/
-│   └── ClaudeService.swift    # AI API calls (Claude / OpenAI / Gemini, SSE streaming)
+│   └── ClaudeService.swift    # AI API calls (Claude / OpenAI / Gemini / DeepSeek, SSE streaming)
 └── Views/
     ├── StandupView.swift       # Standup chat UI
     └── SettingsView.swift      # Settings + goal management UI
@@ -167,7 +169,7 @@ You are a focused, efficient standup facilitator Agent.
 System Preferences → Notifications & Focus → StandupAgent → Allow Notifications
 
 **API call failing?**
-Check that the API Key for your selected provider is correct and that your network can reach the corresponding endpoint (`api.anthropic.com` / `api.openai.com` / `generativelanguage.googleapis.com`)
+Check that the API Key for your selected provider is correct and that your network can reach the corresponding endpoint (`api.anthropic.com` / `api.openai.com` / `generativelanguage.googleapis.com` / `api.deepseek.com`)
 
 **Want the app to launch at login?**
 System Settings → General → Login Items → Add StandupAgent.app

@@ -7,6 +7,7 @@ class ClaudeService: ObservableObject {
 
     private let claudeEndpoint = URL(string: "https://api.anthropic.com/v1/messages")!
     private let openAIEndpoint = URL(string: "https://api.openai.com/v1/chat/completions")!
+    private let deepseekEndpoint = URL(string: "https://api.deepseek.com/chat/completions")!
 
     private var currentTask: URLSessionDataTask?
     private var currentSession: URLSession?
@@ -132,7 +133,16 @@ class ClaudeService: ObservableObject {
                 errorOnce("请先在设置中填入 OpenAI API Key")
                 return
             }
-            request = buildOpenAIRequest(apiKey: settings.openAIApiKey, model: settings.openAIModel, messages: messages, context: context)
+            request = buildOpenAIRequest(endpoint: openAIEndpoint, apiKey: settings.openAIApiKey, model: settings.openAIModel, messages: messages, context: context)
+            handleEvent = { payload in
+                self.handleOpenAIEvent(payload, onChunk: chunk, onComplete: completeOnce, onError: { msg in errorOnce(msg, nil) })
+            }
+        case .deepseek:
+            guard !settings.deepseekApiKey.isEmpty else {
+                errorOnce("请先在设置中填入 DeepSeek API Key")
+                return
+            }
+            request = buildOpenAIRequest(endpoint: deepseekEndpoint, apiKey: settings.deepseekApiKey, model: settings.deepseekModel, messages: messages, context: context)
             handleEvent = { payload in
                 self.handleOpenAIEvent(payload, onChunk: chunk, onComplete: completeOnce, onError: { msg in errorOnce(msg, nil) })
             }
@@ -237,7 +247,7 @@ class ClaudeService: ObservableObject {
         return request
     }
 
-    private func buildOpenAIRequest(apiKey: String, model: String, messages: [ChatMessage], context: String) -> URLRequest {
+    private func buildOpenAIRequest(endpoint: URL, apiKey: String, model: String, messages: [ChatMessage], context: String) -> URLRequest {
         var apiMessages: [[String: Any]] = [
             ["role": "system", "content": systemPrompt]
         ]
@@ -271,7 +281,7 @@ class ClaudeService: ObservableObject {
             "messages": apiMessages
         ]
 
-        var request = URLRequest(url: openAIEndpoint)
+        var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")

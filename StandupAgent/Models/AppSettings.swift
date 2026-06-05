@@ -5,12 +5,14 @@ enum LLMProvider: String, CaseIterable {
     case claude
     case openAI
     case gemini
+    case deepseek
 
     var displayName: String {
         switch self {
         case .claude: return "Claude"
         case .openAI: return "ChatGPT"
         case .gemini: return "Gemini"
+        case .deepseek: return "DeepSeek"
         }
     }
 
@@ -42,6 +44,11 @@ enum LLMProvider: String, CaseIterable {
                 "gemini-1.5-pro",
                 "gemini-1.5-flash",
             ]
+        case .deepseek:
+            return [
+                "deepseek-chat",
+                "deepseek-reasoner",
+            ]
         }
     }
 }
@@ -70,6 +77,10 @@ class AppSettings: ObservableObject {
         didSet { UserDefaults.standard.set(geminiApiKey, forKey: "geminiApiKey") }
     }
 
+    @Published var deepseekApiKey: String {
+        didSet { UserDefaults.standard.set(deepseekApiKey, forKey: "deepseekApiKey") }
+    }
+
     @Published var claudeModel: String {
         didSet { UserDefaults.standard.set(claudeModel, forKey: "claudeModel") }
     }
@@ -80,6 +91,10 @@ class AppSettings: ObservableObject {
 
     @Published var geminiModel: String {
         didSet { UserDefaults.standard.set(geminiModel, forKey: "geminiModel") }
+    }
+
+    @Published var deepseekModel: String {
+        didSet { UserDefaults.standard.set(deepseekModel, forKey: "deepseekModel") }
     }
 
     // MARK: - Reminder schedule
@@ -146,10 +161,12 @@ class AppSettings: ObservableObject {
             ?? ""
         openAIApiKey = defaults.string(forKey: "openAIApiKey") ?? ""
         geminiApiKey = defaults.string(forKey: "geminiApiKey") ?? ""
+        deepseekApiKey = defaults.string(forKey: "deepseekApiKey") ?? ""
 
         claudeModel = defaults.string(forKey: "claudeModel") ?? "claude-sonnet-4-6"
         openAIModel = defaults.string(forKey: "openAIModel") ?? "gpt-4.1"
         geminiModel = defaults.string(forKey: "geminiModel") ?? "gemini-2.5-flash"
+        deepseekModel = defaults.string(forKey: "deepseekModel") ?? "deepseek-chat"
 
         isReminderEnabled = UserDefaults.standard.object(forKey: "isReminderEnabled") as? Bool ?? true
         reminderHour = UserDefaults.standard.object(forKey: "reminderHour") as? Int ?? 9
@@ -184,6 +201,9 @@ class AppSettings: ObservableObject {
         }
         if !LLMProvider.gemini.availableModels.contains(geminiModel) {
             geminiModel = "gemini-2.5-flash"
+        }
+        if !LLMProvider.deepseek.availableModels.contains(deepseekModel) {
+            deepseekModel = "deepseek-chat"
         }
     }
 

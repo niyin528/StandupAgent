@@ -106,6 +106,7 @@ struct SettingsView: View {
         case .claude: return $settings.claudeApiKey
         case .openAI: return $settings.openAIApiKey
         case .gemini: return $settings.geminiApiKey
+        case .deepseek: return $settings.deepseekApiKey
         }
     }
 
@@ -114,6 +115,7 @@ struct SettingsView: View {
         case .claude: return $settings.claudeModel
         case .openAI: return $settings.openAIModel
         case .gemini: return $settings.geminiModel
+        case .deepseek: return $settings.deepseekModel
         }
     }
 
@@ -122,6 +124,7 @@ struct SettingsView: View {
         case .claude: return "Claude API Key"
         case .openAI: return "OpenAI API Key"
         case .gemini: return "Gemini API Key"
+        case .deepseek: return "DeepSeek API Key"
         }
     }
 
@@ -130,6 +133,7 @@ struct SettingsView: View {
         case .claude: return "在 console.anthropic.com 生成 Claude API Key"
         case .openAI: return "在 platform.openai.com 生成 OpenAI API Key"
         case .gemini: return "在 ai.google.dev 获取 Gemini API Key"
+        case .deepseek: return "在 platform.deepseek.com 生成 DeepSeek API Key"
         }
     }
 
