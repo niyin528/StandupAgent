@@ -46,6 +46,8 @@ enum LLMProvider: String, CaseIterable {
             ]
         case .deepseek:
             return [
+                "deepseek-v4-pro",
+                "deepseek-v4-flash",
                 "deepseek-chat",
                 "deepseek-reasoner",
             ]
@@ -166,7 +168,7 @@ class AppSettings: ObservableObject {
         claudeModel = defaults.string(forKey: "claudeModel") ?? "claude-sonnet-4-6"
         openAIModel = defaults.string(forKey: "openAIModel") ?? "gpt-4.1"
         geminiModel = defaults.string(forKey: "geminiModel") ?? "gemini-2.5-flash"
-        deepseekModel = defaults.string(forKey: "deepseekModel") ?? "deepseek-chat"
+        deepseekModel = defaults.string(forKey: "deepseekModel") ?? "deepseek-v4-flash"
 
         isReminderEnabled = UserDefaults.standard.object(forKey: "isReminderEnabled") as? Bool ?? true
         reminderHour = UserDefaults.standard.object(forKey: "reminderHour") as? Int ?? 9
@@ -203,7 +205,7 @@ class AppSettings: ObservableObject {
             geminiModel = "gemini-2.5-flash"
         }
         if !LLMProvider.deepseek.availableModels.contains(deepseekModel) {
-            deepseekModel = "deepseek-chat"
+            deepseekModel = "deepseek-v4-flash"
         }
     }
 
