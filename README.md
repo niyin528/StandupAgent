@@ -1,5 +1,7 @@
 # 早会 Agent — Mac App
 
+[![Download](https://img.shields.io/github/v/release/niyin528/StandupAgent?label=下载最新版&logo=apple)](https://github.com/niyin528/StandupAgent/releases/latest)
+
 一个住在菜单栏的早会提醒 + AI 引导对话 App，支持 Claude、ChatGPT、Gemini 多种 AI 服务。
 
 ## 功能
