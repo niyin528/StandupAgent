@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: macos-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
@@ -62,18 +62,41 @@ jobs:
           APP_PATH="build/Build/Products/Release/StandupAgent.app"
           ZIP_PATH="$RUNNER_TEMP/StandupAgent-notarize.zip"
           ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
+
+          # Submit without --wait so we reliably capture the submission id
           SUBMISSION_ID=$(xcrun notarytool submit "$ZIP_PATH" \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
-            --wait \
-            --timeout 20m \
             --output-format json | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
           echo "Submission ID: $SUBMISSION_ID"
+
+          # Poll the submission status until done (up to ~40 minutes)
+          STATUS="In Progress"
+          for i in $(seq 1 80); do
+            STATUS=$(xcrun notarytool info "$SUBMISSION_ID" \
+              --apple-id "$APPLE_ID" \
+              --password "$APPLE_APP_PASSWORD" \
+              --team-id "$APPLE_TEAM_ID" \
+              --output-format json | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])")
+            echo "Attempt $i: $STATUS"
+            if [ "$STATUS" != "In Progress" ]; then
+              break
+            fi
+            sleep 30
+          done
+
+          # Always fetch the detailed log for diagnostics
           xcrun notarytool log "$SUBMISSION_ID" \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_PASSWORD" \
-            --team-id "$APPLE_TEAM_ID"
+            --team-id "$APPLE_TEAM_ID" || true
+
+          if [ "$STATUS" != "Accepted" ]; then
+            echo "Notarization did not succeed: $STATUS"
+            exit 1
+          fi
+
           xcrun stapler staple "$APP_PATH"
 
       - name: Package as dmg
