@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -66,6 +67,7 @@ jobs:
             --password "$APPLE_APP_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
             --wait \
+            --timeout 20m \
             --output-format json | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
           echo "Submission ID: $SUBMISSION_ID"
           xcrun notarytool log "$SUBMISSION_ID" \
