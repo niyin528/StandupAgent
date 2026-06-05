@@ -21,12 +21,13 @@ jobs:
           KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain
           CERT_PATH=$RUNNER_TEMP/cert.p12
           echo "$CERTIFICATE_BASE64" | base64 --decode -o "$CERT_PATH"
-          security create-keychain -p "" "$KEYCHAIN_PATH"
+          security create-keychain -p "temp_password" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
-          security unlock-keychain -p "" "$KEYCHAIN_PATH"
-          security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          security list-keychain -d user -s "$KEYCHAIN_PATH"
-          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$KEYCHAIN_PATH"
+          security unlock-keychain -p "temp_password" "$KEYCHAIN_PATH"
+          security import "$CERT_PATH" -k "$KEYCHAIN_PATH" -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security list-keychain -d user -s "$KEYCHAIN_PATH" $(security list-keychain -d user | tr -d '"')
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "temp_password" "$KEYCHAIN_PATH"
+          security default-keychain -s "$KEYCHAIN_PATH"
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
