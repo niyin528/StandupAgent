@@ -32,6 +32,12 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
 
+      - name: Verify certificate
+        run: |
+          security find-identity -v -p codesigning
+          echo "---"
+          security list-keychains
+
       - name: Build Release
         run: |
           xcodebuild \
