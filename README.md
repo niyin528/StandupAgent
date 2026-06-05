@@ -17,11 +17,11 @@
 ## 环境要求
 
 - macOS 14.0+
-- Xcode 15+
 - 至少一个 AI 服务的 API Key：
   - **Claude**：在 [console.anthropic.com](https://console.anthropic.com) 获取
   - **ChatGPT**：在 [platform.openai.com](https://platform.openai.com) 获取
   - **Gemini**：在 [aistudio.google.com](https://aistudio.google.com) 获取
+- Xcode 15+ （如需从源代码编译）
 
 首次运行后：
 1. 点击菜单栏的 ☕ 图标 → **设置**
@@ -29,7 +29,7 @@
 3. 设置早会时间（默认 09:00）
 4. 在「本周目标」标签页添加这周要做的事
 
-## 快速开始
+## 如何用 Xcode 编译运行项目
 
 ```bash
 # 1. 用 Xcode 打开项目
@@ -113,11 +113,11 @@ A menu bar standup reminder + AI-guided conversation app for macOS, supporting C
 ## Requirements
 
 - macOS 14.0+
-- Xcode 15+
 - An API Key for at least one AI provider:
   - **Claude**: get one at [console.anthropic.com](https://console.anthropic.com)
   - **ChatGPT**: get one at [platform.openai.com](https://platform.openai.com)
   - **Gemini**: get one at [aistudio.google.com](https://aistudio.google.com)
+- Xcode 15+ (if building from source)
 
 On first launch:
 1. Click the ☕ icon in the menu bar → **Settings**
@@ -125,7 +125,7 @@ On first launch:
 3. Set your standup time (default: 09:00)
 4. Add this week's goals in the "Weekly Goals" tab
 
-## Quick Start
+## How to build and run with Xcode
 
 ```bash
 # 1. Open the project in Xcode
