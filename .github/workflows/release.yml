@@ -58,11 +58,17 @@ jobs:
           APP_PATH="build/Build/Products/Release/StandupAgent.app"
           ZIP_PATH="$RUNNER_TEMP/StandupAgent-notarize.zip"
           ditto -c -k --keepParent "$APP_PATH" "$ZIP_PATH"
-          xcrun notarytool submit "$ZIP_PATH" \
+          SUBMISSION_ID=$(xcrun notarytool submit "$ZIP_PATH" \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
-            --wait
+            --wait \
+            --output-format json | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+          echo "Submission ID: $SUBMISSION_ID"
+          xcrun notarytool log "$SUBMISSION_ID" \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID"
           xcrun stapler staple "$APP_PATH"
 
       - name: Package as dmg
