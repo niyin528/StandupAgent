@@ -19,6 +19,7 @@ apiKeys*.json
 
 # Xcode
 build/
+localbuild/
 DerivedData/
 *.xcuserstate
 *.xcuserdatad/
