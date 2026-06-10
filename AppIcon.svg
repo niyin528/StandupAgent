@@ -1,0 +1,23 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="squircle">
+      <rect x="100" y="100" width="824" height="824" rx="186"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#squircle)">
+    <rect x="100" y="100" width="824" height="824" fill="#FFE082"/>
+    <circle cx="512" cy="722" r="218" fill="#FB8C00"/>
+    <g stroke="#FB8C00" stroke-width="30" stroke-linecap="round">
+      <line x1="295" y1="482" x2="231" y2="418"/>
+      <line x1="729" y1="482" x2="793" y2="418"/>
+      <line x1="167" y1="684" x2="78" y2="673"/>
+      <line x1="857" y1="684" x2="946" y2="673"/>
+    </g>
+    <path d="M100 924 v-142 q105 -75 225 -22 q120 52 232 -22 q127 -82 240 0 q67 49 127 22 v165 z" fill="#FFF8E1"/>
+    <path d="M100 924 v-60 q150 -60 300 0 q150 60 300 -11 q112 -49 224 11 v60 z" fill="#FFECB3"/>
+    <path d="M325 385 a127 127 0 0 1 127 -127 h97 a127 127 0 0 1 0 254 h-150 l-75 67 z" fill="#FFFFFF"/>
+    <circle cx="430" cy="385" r="19" fill="#FB8C00"/>
+    <circle cx="501" cy="385" r="19" fill="#FB8C00"/>
+    <circle cx="572" cy="385" r="19" fill="#FB8C00"/>
+  </g>
+</svg>
