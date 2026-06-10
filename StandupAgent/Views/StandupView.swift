@@ -421,7 +421,7 @@ struct StandupView: View {
     }
 
     private func stopStream() {
-        ClaudeService.shared.cancelStream()
+        LLMService.shared.cancelStream()
         if let last = messages.last, last.role == .assistant {
             if last.content.isEmpty {
                 messages.removeLast()
@@ -445,7 +445,7 @@ struct StandupView: View {
         let fullContext = baseContext + "\n" + weeklyMemory
 
         DispatchQueue.global(qos: .userInitiated).async {
-            ClaudeService.shared.streamMessage(
+            LLMService.shared.streamMessage(
                 messages: messagesToSend,
                 context: fullContext,
                 onChunk: { chunk in

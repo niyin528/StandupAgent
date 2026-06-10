@@ -49,7 +49,7 @@ StandupAgent/
 ├── Models/
 │   └── AppSettings.swift      # 设置存储、WeeklyGoal 模型、Context 构建
 ├── Services/
-│   └── ClaudeService.swift    # AI API 调用（支持 Claude / OpenAI / Gemini / DeepSeek，SSE 流式）
+│   └── LLMService.swift       # AI API 调用（支持 Claude / OpenAI / Gemini / DeepSeek，SSE 流式）
 └── Views/
     ├── StandupView.swift       # 早会对话界面
     └── SettingsView.swift      # 设置 + 目标管理界面
@@ -57,7 +57,7 @@ StandupAgent/
 
 ## 自定义 AI 的引导风格
 
-在 `ClaudeService.swift` 里修改 `systemPrompt`，可以调整 AI 的引导风格（对所有 provider 生效）：
+在 `LLMService.swift` 里修改 `systemPrompt`，可以调整 AI 的引导风格（对所有 provider 生效）：
 
 ```swift
 private let systemPrompt = """
@@ -146,7 +146,7 @@ StandupAgent/
 ├── Models/
 │   └── AppSettings.swift      # Settings storage, WeeklyGoal model, context builder
 ├── Services/
-│   └── ClaudeService.swift    # AI API calls (Claude / OpenAI / Gemini / DeepSeek, SSE streaming)
+│   └── LLMService.swift       # AI API calls (Claude / OpenAI / Gemini / DeepSeek, SSE streaming)
 └── Views/
     ├── StandupView.swift       # Standup chat UI
     └── SettingsView.swift      # Settings + goal management UI
@@ -154,7 +154,7 @@ StandupAgent/
 
 ## Customizing the AI Persona
 
-Edit `systemPrompt` in `ClaudeService.swift` to change the AI's coaching style (applies to all providers):
+Edit `systemPrompt` in `LLMService.swift` to change the AI's coaching style (applies to all providers):
 
 ```swift
 private let systemPrompt = """

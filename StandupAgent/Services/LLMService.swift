@@ -1,9 +1,9 @@
 import Foundation
 
-// MARK: - Claude Service
+// MARK: - LLM Service
 
-class ClaudeService: ObservableObject {
-    static let shared = ClaudeService()
+class LLMService: ObservableObject {
+    static let shared = LLMService()
 
     private let claudeEndpoint = URL(string: "https://api.anthropic.com/v1/messages")!
     private let openAIEndpoint = URL(string: "https://api.openai.com/v1/chat/completions")!

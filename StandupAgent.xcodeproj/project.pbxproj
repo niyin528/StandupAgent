@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		A001 /* StandupAgentApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B001 /* StandupAgentApp.swift */; };
 		A002 /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B002 /* AppSettings.swift */; };
-		A003 /* ClaudeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B003 /* ClaudeService.swift */; };
+		A003 /* LLMService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B003 /* LLMService.swift */; };
 		A004 /* StandupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B004 /* StandupView.swift */; };
 		A005 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B005 /* SettingsView.swift */; };
 		A006 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B006 /* Assets.xcassets */; };
@@ -20,7 +20,7 @@
 /* Begin PBXFileReference section */
 		B001 /* StandupAgentApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupAgentApp.swift; sourceTree = "<group>"; };
 		B002 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
-		B003 /* ClaudeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeService.swift; sourceTree = "<group>"; };
+		B003 /* LLMService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LLMService.swift; sourceTree = "<group>"; };
 		B004 /* StandupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StandupView.swift; sourceTree = "<group>"; };
 		B005 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		B006 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -80,7 +80,7 @@
 		E005 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				B003 /* ClaudeService.swift */,
+				B003 /* LLMService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -163,7 +163,7 @@
 			files = (
 				A001 /* StandupAgentApp.swift in Sources */,
 				A002 /* AppSettings.swift in Sources */,
-				A003 /* ClaudeService.swift in Sources */,
+				A003 /* LLMService.swift in Sources */,
 				A004 /* StandupView.swift in Sources */,
 				A005 /* SettingsView.swift in Sources */,
 				A007 /* StandupSession.swift in Sources */,
