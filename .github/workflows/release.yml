@@ -121,11 +121,20 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          FIXED_NOTES=$(cat <<'EOF'
+          PREV_TAG=$(git tag --sort=-v:refname | grep -v "^${{ github.ref_name }}$" | head -1)
+          if [ -n "$PREV_TAG" ]; then
+            CHANGES=$(git log "${PREV_TAG}..${{ github.ref_name }}" --pretty=format:"- %s" | grep -E "^- (feat|fix|perf|refactor):" || true)
+          else
+            CHANGES=$(git log "${{ github.ref_name }}" --pretty=format:"- %s" | grep -E "^- (feat|fix|perf|refactor):" || true)
+          fi
+
+          NOTES=$(cat <<EOF
+          ## 更新内容
+          ${CHANGES:-"- Bug fixes and improvements"}
 
           ## 安装方式
-          1. 下载 `StandupAgent.dmg`，双击打开
-          2. 将 `StandupAgent.app` 拖入 Applications 文件夹
+          1. 下载 \`StandupAgent.dmg\`，双击打开
+          2. 将 \`StandupAgent.app\` 拖入 Applications 文件夹
           3. 首次使用：在设置里填入 AI API Key
 
           ## 系统要求
@@ -134,7 +143,5 @@ jobs:
           EOF
           )
           gh release create "${{ github.ref_name }}" StandupAgent.dmg \
-            --generate-notes
-          EXISTING=$(gh release view "${{ github.ref_name }}" --json body -q .body)
-          gh release edit "${{ github.ref_name }}" \
-            --notes "${EXISTING}${FIXED_NOTES}"
+            --title "${{ github.ref_name }}" \
+            --notes "$NOTES"
