@@ -121,6 +121,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           files: StandupAgent.dmg
+          generate_release_notes: true
           body: |
             ## 安装方式
             1. 下载 `StandupAgent.dmg`，双击打开
