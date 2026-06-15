@@ -118,16 +118,22 @@ jobs:
             "build/Build/Products/Release/StandupAgent.app"
 
       - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v3
-        with:
-          files: StandupAgent.dmg
-          generate_release_notes: true
-          body: |
-            ## 安装方式
-            1. 下载 `StandupAgent.dmg`，双击打开
-            2. 将 `StandupAgent.app` 拖入 Applications 文件夹
-            3. 首次使用：在设置里填入 AI API Key
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          FIXED_NOTES=$(cat <<'EOF'
 
-            ## 系统要求
-            - macOS 14.0+
-            - 需要自备 Claude / ChatGPT / Gemini API Key
+          ## 安装方式
+          1. 下载 `StandupAgent.dmg`，双击打开
+          2. 将 `StandupAgent.app` 拖入 Applications 文件夹
+          3. 首次使用：在设置里填入 AI API Key
+
+          ## 系统要求
+          - macOS 14.0+
+          - 需要自备 Claude / ChatGPT / Gemini API Key
+          EOF
+          )
+          gh release create "${{ github.ref_name }}" StandupAgent.dmg \
+            --generate-notes
+          gh release edit "${{ github.ref_name }}" \
+            --notes-append "$FIXED_NOTES"
