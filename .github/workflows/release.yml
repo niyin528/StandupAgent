@@ -121,11 +121,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PREV_TAG=$(git tag --sort=-v:refname | grep -v "^${{ github.ref_name }}$" | head -1)
+          PREV_TAG=$(git tag --sort=-version:refname | grep -v "^${{ github.ref_name }}$" | head -1)
+          echo "Previous tag: $PREV_TAG"
           if [ -n "$PREV_TAG" ]; then
-            CHANGES=$(git log "${PREV_TAG}..${{ github.ref_name }}" --pretty=format:"- %s" | grep -E "^- (feat|fix|perf|refactor):" || true)
+            CHANGES=$(git log "${PREV_TAG}..HEAD" --pretty=format:"- %s" | grep -E "^- (feat|fix|perf|refactor):" || true)
           else
-            CHANGES=$(git log "${{ github.ref_name }}" --pretty=format:"- %s" | grep -E "^- (feat|fix|perf|refactor):" || true)
+            CHANGES=$(git log HEAD --pretty=format:"- %s" | grep -E "^- (feat|fix|perf|refactor):" || true)
           fi
 
           NOTES=$(cat <<EOF
