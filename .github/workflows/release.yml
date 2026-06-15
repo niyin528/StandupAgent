@@ -135,5 +135,6 @@ jobs:
           )
           gh release create "${{ github.ref_name }}" StandupAgent.dmg \
             --generate-notes
+          EXISTING=$(gh release view "${{ github.ref_name }}" --json body -q .body)
           gh release edit "${{ github.ref_name }}" \
-            --notes-append "$FIXED_NOTES"
+            --notes "${EXISTING}${FIXED_NOTES}"
