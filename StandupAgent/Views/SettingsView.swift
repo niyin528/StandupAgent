@@ -195,7 +195,7 @@ struct SettingsView: View {
     private func goalRow(index: Int) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text(settings.weeklyGoals[index].weekLabel)
+                Text(weekLabelWithHolidays(settings.weeklyGoals[index].weekLabel))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 Spacer()
@@ -233,6 +233,32 @@ struct SettingsView: View {
         if let delegate = NSApp.delegate as? AppDelegate {
             delegate.scheduleNextReminder()
         }
+    }
+
+    /// 将 weekLabel（如 "6/15 - 6/19"）转换为带节假日标注的显示字符串
+    private func weekLabelWithHolidays(_ weekLabel: String) -> String {
+        // 解析 weekLabel 格式 "M/d - M/d"
+        let components = weekLabel.split(separator: "-")
+        guard components.count == 2 else { return weekLabel }
+
+        let startStr = components[0].trimmingCharacters(in: .whitespaces)
+        let startParts = startStr.split(separator: "/")
+        guard startParts.count == 2 else { return weekLabel }
+
+        guard let month = Int(startParts[0]), let day = Int(startParts[1]) else { return weekLabel }
+
+        // 用当前年份构建周一的日期
+        let calendar = Calendar.current
+        let currentYear = calendar.component(.year, from: Date())
+        var dateComponents = DateComponents()
+        dateComponents.year = currentYear
+        dateComponents.month = month
+        dateComponents.day = day
+
+        guard let monday = calendar.date(from: dateComponents) else { return weekLabel }
+
+        // 调用 weekRange 获取带节假日标注的字符串
+        return AppSettings.weekRange(for: monday)
     }
 }
 

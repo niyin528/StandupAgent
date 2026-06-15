@@ -132,6 +132,72 @@ class AppSettings: ObservableObject {
         weeklyGoals.remove(at: index)
     }
 
+    // MARK: - Holidays (中国法定节假日 2026-2027)
+    private static let holidays2026: Set<String> = [
+        // 元旦
+        "2026-01-01", "2026-01-02", "2026-01-03",
+        // 春节
+        "2026-02-16", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-21", "2026-02-22", "2026-02-23",
+        // 清明节
+        "2026-04-04", "2026-04-05", "2026-04-06",
+        // 劳动节
+        "2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04", "2026-05-05",
+        // 端午节
+        "2026-06-19", "2026-06-20", "2026-06-21",
+        // 中秋节
+        "2026-09-25", "2026-09-26", "2026-09-27",
+        // 国庆节
+        "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04", "2026-10-05", "2026-10-06", "2026-10-07", "2026-10-08"
+    ]
+
+    private static let holidays2027: Set<String> = [
+        // 元旦
+        "2027-01-01", "2027-01-02", "2027-01-03",
+        // 春节
+        "2027-02-05", "2027-02-06", "2027-02-07", "2027-02-08", "2027-02-09", "2027-02-10", "2027-02-11", "2027-02-12",
+        // 清明节
+        "2027-04-03", "2027-04-04", "2027-04-05",
+        // 劳动节
+        "2027-05-01", "2027-05-02", "2027-05-03", "2027-05-04", "2027-05-05",
+        // 端午节
+        "2027-06-08", "2027-06-09", "2027-06-10",
+        // 中秋节+国庆节
+        "2027-10-01", "2027-10-02", "2027-10-03", "2027-10-04", "2027-10-05", "2027-10-06", "2027-10-07", "2027-10-08"
+    ]
+
+    /// 判断某天是否为法定节假日
+    static func isHoliday(_ date: Date) -> Bool {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let dateString = formatter.string(from: date)
+
+        let year = Calendar.current.component(.year, from: date)
+        if year == 2026 {
+            return holidays2026.contains(dateString)
+        } else if year == 2027 {
+            return holidays2027.contains(dateString)
+        }
+        return false
+    }
+
+    /// 获取本周的工作日（周一到周五，排除节假日）
+    static func workdaysInWeek(for date: Date) -> [Date] {
+        let calendar = Calendar.current
+        let weekday = calendar.component(.weekday, from: date)
+        let daysToMonday = (weekday + 5) % 7
+        guard let monday = calendar.date(byAdding: .day, value: -daysToMonday, to: date) else { return [] }
+
+        var workdays: [Date] = []
+        for i in 0..<5 { // 周一到周五
+            if let day = calendar.date(byAdding: .day, value: i, to: monday) {
+                if !isHoliday(day) {
+                    workdays.append(day)
+                }
+            }
+        }
+        return workdays
+    }
+
     static func currentWeekRange() -> String {
         weekRange(for: Date())
     }
@@ -150,7 +216,23 @@ class AppSettings: ObservableObject {
         let fmt = DateFormatter()
         fmt.locale = Locale(identifier: "zh_CN")
         fmt.dateFormat = "M/d"
-        return "\(fmt.string(from: monday)) - \(fmt.string(from: friday))"
+
+        // 检查周一到周五是否有节假日
+        var holidayAnnotations: [String] = []
+        for i in 0..<5 {
+            if let day = cal.date(byAdding: .day, value: i, to: monday) {
+                if isHoliday(day) {
+                    let dayStr = fmt.string(from: day)
+                    holidayAnnotations.append("\(dayStr)是节假日")
+                }
+            }
+        }
+
+        var result = "\(fmt.string(from: monday)) - \(fmt.string(from: friday))"
+        if !holidayAnnotations.isEmpty {
+            result += " (\(holidayAnnotations.joined(separator: "，")))"
+        }
+        return result
     }
 
     private init() {
@@ -224,7 +306,29 @@ class AppSettings: ObservableObject {
         let weekdayNames = ["", "周日", "周一", "周二", "周三", "周四", "周五", "周六"]
         let today = weekdayNames[weekday]
 
-        var ctx = "今天是 \(dateStr)（\(today)）。\n\n"
+        var ctx = "今天是 \(dateStr)（\(today)）。\n"
+
+        // 只在有节假日时，添加本周工作日信息
+        let calendar = Calendar.current
+        let daysToMonday = (weekday + 5) % 7
+        if let monday = calendar.date(byAdding: .day, value: -daysToMonday, to: Date()) {
+            var holidayAnnotations: [String] = []
+            let fmt = DateFormatter()
+            fmt.dateFormat = "M/d"
+            for i in 0..<5 {
+                if let day = calendar.date(byAdding: .day, value: i, to: monday) {
+                    if Self.isHoliday(day) {
+                        holidayAnnotations.append(fmt.string(from: day))
+                    }
+                }
+            }
+            if !holidayAnnotations.isEmpty {
+                let workdays = Self.workdaysInWeek(for: Date())
+                let totalWorkdays = workdays.count
+                ctx += "本周工作日共 \(totalWorkdays) 天，\(holidayAnnotations.joined(separator: "、")) 是法定节假日。\n"
+            }
+        }
+        ctx += "\n"
 
         let nonEmpty = weeklyGoals.filter { !$0.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         if !nonEmpty.isEmpty {

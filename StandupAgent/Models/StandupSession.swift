@@ -23,6 +23,12 @@ final class StandupSession {
         f.dateFormat = "yyyy-MM-dd"
         return f.string(from: date)
     }
+
+    static func date(from dateKey: String) -> Date? {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        return f.date(from: dateKey)
+    }
 }
 
 @Model

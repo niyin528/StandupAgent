@@ -334,25 +334,31 @@ struct StandupView: View {
 
     // MARK: - Weekly Memory
 
-    /// 获取本周一到昨天的早会对话，压缩后作为上下文
+    /// 获取本周一到昨天的早会对话，压缩后作为上下文（只包含实际工作日）
     private func buildWeeklyMemory() -> String {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
 
-        // 计算本周一
-        let weekday = calendar.component(.weekday, from: today)
-        let daysFromMonday = (weekday + 5) % 7 // Sun=1 → 6, Mon=2 → 0, Tue=3 → 1 ...
-        guard daysFromMonday > 0,
-              let monday = calendar.date(byAdding: .day, value: -daysFromMonday, to: today) else {
-            return "" // 今天就是周一，没有本周历史
+        // 获取本周工作日（周一到周五，排除节假日）
+        let workdays = AppSettings.workdaysInWeek(for: today)
+
+        // 过滤出今天之前的工作日
+        let previousWorkdays = workdays.filter { $0 < today }
+
+        guard !previousWorkdays.isEmpty else {
+            return "" // 没有需要回顾的工作日
         }
 
-        let mondayKey = StandupSession.dateKey(from: monday)
+        // 将日期转换为 dateKey
+        let workdayKeys = previousWorkdays.map { StandupSession.dateKey(from: $0) }
         let todayKey = StandupSession.dateKey(from: today)
 
+        guard let firstKey = workdayKeys.first else { return "" }
+
+        // 只查询工作日的会话
         let descriptor = FetchDescriptor<StandupSession>(
             predicate: #Predicate<StandupSession> { session in
-                session.dateString >= mondayKey && session.dateString < todayKey
+                session.dateString >= firstKey && session.dateString < todayKey
             },
             sortBy: [SortDescriptor(\StandupSession.dateString)]
         )
@@ -361,10 +367,20 @@ struct StandupView: View {
             return ""
         }
 
+        // 过滤掉节假日会话（双重保险）
+        let workdaySessions = sessions.filter { session in
+            guard let sessionDate = StandupSession.date(from: session.dateString) else { return false }
+            return !AppSettings.isHoliday(sessionDate)
+        }
+
+        guard !workdaySessions.isEmpty else {
+            return ""
+        }
+
         let maxCharsPerDay = 5000
         var memory = "【本周早会回顾（压缩）】\n"
 
-        for session in sessions {
+        for session in workdaySessions {
             memory += "\n📅 \(session.dateString):\n"
             var dayContent = ""
             for msg in session.sortedMessages where msg.role == "user" {
