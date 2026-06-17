@@ -315,10 +315,12 @@ class AppSettings: ObservableObject {
             var holidayAnnotations: [String] = []
             let fmt = DateFormatter()
             fmt.dateFormat = "M/d"
+            let weekdayNames2 = ["", "周日", "周一", "周二", "周三", "周四", "周五", "周六"]
             for i in 0..<5 {
                 if let day = calendar.date(byAdding: .day, value: i, to: monday) {
                     if Self.isHoliday(day) {
-                        holidayAnnotations.append(fmt.string(from: day))
+                        let wd = calendar.component(.weekday, from: day)
+                        holidayAnnotations.append("\(fmt.string(from: day))（\(weekdayNames2[wd])）")
                     }
                 }
             }
