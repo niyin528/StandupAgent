@@ -600,10 +600,8 @@ struct MessageBubble: View {
 
     private var editView: some View {
         VStack(alignment: .trailing, spacing: 10) {
-            TextField("", text: $editText, axis: .vertical)
-                .textFieldStyle(.plain)
-                .font(.body)
-                .lineLimit(1...8)
+            EditTextField(text: $editText, onSubmit: onSaveEdit)
+                .frame(minHeight: 36, maxHeight: 160)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(Color(NSColor.controlBackgroundColor))
@@ -624,6 +622,7 @@ struct MessageBubble: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.small)
                 .disabled(editText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .keyboardShortcut(.return, modifiers: [])
             }
         }
     }
@@ -684,6 +683,9 @@ struct PasteAwareTextField: NSViewRepresentable {
     func updateNSView(_ nsView: PasteTextField, context: Context) {
         if nsView.stringValue != text {
             nsView.stringValue = text
+            if let editor = nsView.currentEditor() as? NSTextView, editor.string != text {
+                editor.string = text
+            }
         }
         nsView.placeholderString = placeholder
     }
@@ -707,8 +709,11 @@ struct PasteAwareTextField: NSViewRepresentable {
         
         func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
             if commandSelector == #selector(NSResponder.insertNewline(_:)) {
-                // Enter key pressed - trigger submit
+                // Enter — send
                 onSubmit?()
+                DispatchQueue.main.async {
+                    textView.window?.makeFirstResponder(textView)
+                }
                 return true
             }
             return false
@@ -724,6 +729,13 @@ class PasteTextField: NSTextField {
            event.charactersIgnoringModifiers == "v" {
             return handlePaste()
         }
+        // Cmd+Enter — insert newline into field editor
+        if event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command,
+           event.keyCode == 36,
+           let editor = currentEditor() as? NSTextView {
+            editor.insertNewlineIgnoringFieldEditor(nil)
+            return true
+        }
         return super.performKeyEquivalent(with: event)
     }
 
@@ -736,6 +748,82 @@ class PasteTextField: NSTextField {
         }
         NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: self)
         return true
+    }
+}
+
+// MARK: - Edit Text Field
+
+struct EditTextField: NSViewRepresentable {
+    @Binding var text: String
+    let onSubmit: () -> Void
+
+    func makeCoordinator() -> Coordinator { Coordinator(text: $text, onSubmit: onSubmit) }
+
+    func makeNSView(context: Context) -> NSScrollView {
+        let textView = EditTextView()
+        textView.delegate = context.coordinator
+        textView.onSubmit = onSubmit
+        textView.isRichText = false
+        textView.font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        textView.drawsBackground = false
+        textView.isEditable = true
+        textView.isSelectable = true
+        textView.textContainerInset = .zero
+        textView.textContainer?.lineFragmentPadding = 0
+
+        let scrollView = NSScrollView()
+        scrollView.documentView = textView
+        scrollView.hasVerticalScroller = false
+        scrollView.drawsBackground = false
+        scrollView.borderType = .noBorder
+        context.coordinator.textView = textView
+        return scrollView
+    }
+
+    func updateNSView(_ nsView: NSScrollView, context: Context) {
+        guard let textView = nsView.documentView as? EditTextView else { return }
+        if textView.string != text {
+            textView.string = text
+        }
+    }
+
+    class Coordinator: NSObject, NSTextViewDelegate {
+        @Binding var text: String
+        let onSubmit: () -> Void
+        weak var textView: NSTextView?
+
+        init(text: Binding<String>, onSubmit: @escaping () -> Void) {
+            _text = text
+            self.onSubmit = onSubmit
+        }
+
+        func textDidChange(_ notification: Notification) {
+            if let tv = notification.object as? NSTextView {
+                text = tv.string
+            }
+        }
+    }
+}
+
+class EditTextView: NSTextView {
+    var onSubmit: (() -> Void)?
+
+    override func keyDown(with event: NSEvent) {
+        let onlyCommand = event.modifierFlags.intersection(.deviceIndependentFlagsMask) == .command
+        if event.keyCode == 36 {
+            if onlyCommand {
+                // Cmd+Enter — insert newline
+                insertNewlineIgnoringFieldEditor(nil)
+            } else if event.modifierFlags.intersection(.deviceIndependentFlagsMask).isEmpty {
+                // Enter — send
+                let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty { onSubmit?() }
+            } else {
+                super.keyDown(with: event)
+            }
+            return
+        }
+        super.keyDown(with: event)
     }
 }
 
