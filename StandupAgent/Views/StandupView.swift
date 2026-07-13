@@ -70,10 +70,7 @@ struct StandupView: View {
                     .padding(20)
                 }
                 .onChange(of: messages.count) { _ in
-                    withAnimation { proxy.scrollTo("bottom") }
-                }
-                .onChange(of: messages.last?.content) { _ in
-                    withAnimation { proxy.scrollTo("bottom") }
+                    proxy.scrollTo("bottom")
                 }
             }
 
@@ -495,6 +492,28 @@ private func markdownAttributed(_ string: String) -> AttributedString {
     return (try? AttributedString(markdown: string, options: options)) ?? AttributedString(string)
 }
 
+private func messageParagraphs(_ content: String) -> [String] {
+    content.components(separatedBy: "\n\n")
+        .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+        .filter { !$0.isEmpty }
+}
+
+/// 完成后按段落渲染 Markdown；仅在 isStreaming=false 时使用，避免流式期间反复解析
+private struct AssistantMarkdownBody: View {
+    let content: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            ForEach(Array(messageParagraphs(content).enumerated()), id: \.offset) { _, paragraph in
+                Text(markdownAttributed(paragraph))
+                    .textSelection(.enabled)
+                    .lineSpacing(4)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+    }
+}
+
 struct MessageBubble: View {
     let message: ChatMessage
     let isEditing: Bool
@@ -526,18 +545,13 @@ struct MessageBubble: View {
                     if message.content.isEmpty && message.isStreaming {
                         // 打字指示器
                         TypingIndicator()
+                    } else if message.isStreaming {
+                        // 流式期间用纯文本，避免每个 chunk 重复解析 Markdown 卡死 UI
+                        Text(message.content)
+                            .textSelection(.enabled)
+                            .lineSpacing(4)
                     } else {
-                        VStack(alignment: .leading, spacing: 10) {
-                            ForEach(Array(message.content.components(separatedBy: "\n\n").enumerated()), id: \.offset) { _, paragraph in
-                                let trimmed = paragraph.trimmingCharacters(in: .whitespacesAndNewlines)
-                                if !trimmed.isEmpty {
-                                    Text(markdownAttributed(trimmed))
-                                        .textSelection(.enabled)
-                                        .lineSpacing(4)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                }
-                            }
-                        }
+                        AssistantMarkdownBody(content: message.content)
                     }
                     if message.isStreaming && !message.content.isEmpty {
                         // 流式光标
