@@ -15,50 +15,15 @@ class LLMService: ObservableObject {
     private var retryCount = 0
     private let maxRetries = 2
     private var pendingRetry: (() -> Void)?
-    private var receivedFirstChunk = false
 
-    private func log(_ message: String) {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm:ss.SSS"
-        print("[StandupAgent/LLM \(formatter.string(from: Date()))] \(message)")
-    }
-
-    private func invalidateCurrentSession() {
+    func cancelStream() {
+        isCancelled = true
+        retryCount = 0
+        pendingRetry = nil
         currentTask?.cancel()
         currentTask = nil
         currentSession?.invalidateAndCancel()
         currentSession = nil
-    }
-
-    /// 统一重试入口，避免 delegate 与 errorOnce 双重递增 retryCount
-    @discardableResult
-    private func scheduleRetry(reason: String) -> Bool {
-        guard !isCancelled, retryCount < maxRetries else {
-            log("重试已耗尽或已取消 (retryCount=\(retryCount)/\(maxRetries), reason=\(reason))")
-            return false
-        }
-        retryCount += 1
-        log("计划重试 \(retryCount)/\(maxRetries)，\(retryCount)s 后执行，原因: \(reason)")
-        receivedFirstChunk = false
-        invalidateCurrentSession()
-        DispatchQueue.main.asyncAfter(deadline: .now() + Double(retryCount)) { [weak self] in
-            guard let self, !self.isCancelled else {
-                self?.log("重试已跳过（用户取消）")
-                return
-            }
-            self.log("开始第 \(self.retryCount) 次重试")
-            self.pendingRetry?()
-        }
-        return true
-    }
-
-    func cancelStream() {
-        log("用户取消流式请求")
-        isCancelled = true
-        retryCount = 0
-        pendingRetry = nil
-        receivedFirstChunk = false
-        invalidateCurrentSession()
     }
 
     private func createSession(delegate: StreamDelegate) -> URLSession {
@@ -94,9 +59,7 @@ class LLMService: ObservableObject {
     ) {
         retryCount = 0
         isCancelled = false
-        receivedFirstChunk = false
-        log("streamMessage 开始，provider=\(AppSettings.shared.provider.displayName)，消息数=\(messages.count)，上下文=\(context.count) 字符")
-
+        
         let performRequest: () -> Void = { [weak self] in
             self?.performStream(
                 messages: messages,
@@ -119,8 +82,6 @@ class LLMService: ObservableObject {
         onError: @escaping (String) -> Void
     ) {
         let settings = AppSettings.shared
-        let attempt = retryCount + 1
-        log("performStream 第 \(attempt) 次请求，provider=\(settings.provider.displayName)")
 
         var completed = false
         var errored = false
@@ -129,39 +90,28 @@ class LLMService: ObservableObject {
             guard !completed else { return }
             completed = true
             retryCount = 0
-            log("流式响应完成")
             DispatchQueue.main.async { onComplete() }
         }
 
         func errorOnce(_ msg: String, _ error: Error? = nil) {
             guard !errored, !self.isCancelled else { return }
             errored = true
-
-            let nsError = error as NSError?
-            if nsError?.code == NSURLErrorCancelled || msg.lowercased().contains("cancelled") {
-                log("请求已取消，不重试")
-                retryCount = 0
-                DispatchQueue.main.async { onError("请求已取消") }
-                return
-            }
-
+            
             let errorMsg = self.classifyError(msg, error: error)
-            log("请求失败: \(msg)\(error.map { " | \($0.localizedDescription)" } ?? "")")
-
-            if self.shouldRetry(errorMsg, error: error), self.scheduleRetry(reason: errorMsg) {
+            
+            if self.shouldRetry(errorMsg) && self.retryCount < self.maxRetries {
+                self.retryCount += 1
+                DispatchQueue.main.asyncAfter(deadline: .now() + Double(self.retryCount)) {
+                    self.pendingRetry?()
+                }
                 return
             }
-
+            
             retryCount = 0
-            log("最终失败，通知 UI: \(errorMsg)")
             DispatchQueue.main.async { onError(errorMsg) }
         }
 
         func chunk(_ text: String) {
-            if !receivedFirstChunk {
-                receivedFirstChunk = true
-                log("收到首个内容块 (\(text.count) 字符)")
-            }
             DispatchQueue.main.async { onChunk(text) }
         }
 
@@ -211,18 +161,14 @@ class LLMService: ObservableObject {
             }
         }
 
-        invalidateCurrentSession()
-
-        let modelName: String
-        switch settings.provider {
-        case .claude: modelName = settings.claudeModel
-        case .openAI: modelName = settings.openAIModel
-        case .gemini: modelName = settings.geminiModel
-        case .deepseek: modelName = settings.deepseekModel
-        }
-        log("发起 HTTP 请求，model=\(modelName)，url=\(request.url?.host ?? "?")")
-
-        let delegate = StreamDelegate(onEvent: handleEvent, onComplete: completeOnce, onError: errorOnce)
+        let delegate = StreamDelegate(onEvent: handleEvent, onComplete: completeOnce, onError: errorOnce, onRetryableError: { [weak self] in
+            guard let self = self, self.retryCount < self.maxRetries else { return false }
+            self.retryCount += 1
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(self.retryCount)) {
+                self.pendingRetry?()
+            }
+            return true
+        })
         let session = createSession(delegate: delegate)
         let task = session.dataTask(with: request)
         currentSession = session
@@ -253,17 +199,8 @@ class LLMService: ObservableObject {
         return msg
     }
     
-    private func shouldRetry(_ msg: String, error: Error? = nil) -> Bool {
-        let nsError = error as NSError?
-        if nsError?.code == NSURLErrorSecureConnectionFailed ||
-           nsError?.code == NSURLErrorServerCertificateHasBadDate ||
-           nsError?.code == NSURLErrorServerCertificateUntrusted ||
-           nsError?.code == NSURLErrorTimedOut ||
-           nsError?.code == NSURLErrorNotConnectedToInternet ||
-           nsError?.code == NSURLErrorNetworkConnectionLost {
-            return true
-        }
-        return msg.contains("TLS") || msg.contains("超时") ||
+    private func shouldRetry(_ msg: String) -> Bool {
+        return msg.contains("TLS") || msg.contains("超时") || 
                msg.contains("network") || msg.contains("timeout")
     }
 
@@ -532,13 +469,16 @@ class StreamDelegate: NSObject, URLSessionDataDelegate {
             } else {
                 msg = "HTTP \(code)" + (code == 403 ? "\n⚠️ 403 通常表示访问被拦截，请检查 VPN 是否已开启" : "")
             }
-            log("HTTP 错误响应: \(msg)")
             DispatchQueue.main.async { self.onError(msg, nil) }
         } else if let error = error {
-            log("URLSession 完成但有错误: \(error.localizedDescription) (code=\((error as NSError).code))")
+            let nsError = error as NSError
+            if nsError.code == NSURLErrorSecureConnectionFailed || 
+               nsError.code == NSURLErrorServerCertificateHasBadDate ||
+               nsError.code == NSURLErrorServerCertificateUntrusted {
+                _ = self.onRetryableError()
+            }
             DispatchQueue.main.async { self.onError(error.localizedDescription, error) }
         } else {
-            log("URLSession 正常完成")
             DispatchQueue.main.async { self.onComplete() }
         }
     }
@@ -546,7 +486,6 @@ class StreamDelegate: NSObject, URLSessionDataDelegate {
     func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
         if let httpResponse = response as? HTTPURLResponse {
             httpStatusCode = httpResponse.statusCode
-            log("收到 HTTP 响应，status=\(httpResponse.statusCode)")
         }
         completionHandler(.allow)
     }
