@@ -39,6 +39,7 @@ class LLMService: ObservableObject {
         }
         retryCount += 1
         log("计划重试 \(retryCount)/\(maxRetries)，\(retryCount)s 后执行，原因: \(reason)")
+        receivedFirstChunk = false
         invalidateCurrentSession()
         DispatchQueue.main.asyncAfter(deadline: .now() + Double(retryCount)) { [weak self] in
             guard let self, !self.isCancelled else {
