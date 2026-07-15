@@ -133,7 +133,7 @@ class LLMService: ObservableObject {
                 errorOnce("请先在设置中填入 OpenAI API Key")
                 return
             }
-            request = buildOpenAIRequest(endpoint: openAIEndpoint, apiKey: settings.openAIApiKey, model: settings.openAIModel, messages: messages, context: context)
+            request = buildChatCompletionsRequest(endpoint: openAIEndpoint, apiKey: settings.openAIApiKey, model: settings.openAIModel, messages: messages, context: context)
             handleEvent = { payload in
                 self.handleOpenAIEvent(payload, onChunk: chunk, onComplete: completeOnce, onError: { msg in errorOnce(msg, nil) })
             }
@@ -142,7 +142,7 @@ class LLMService: ObservableObject {
                 errorOnce("请先在设置中填入 DeepSeek API Key")
                 return
             }
-            request = buildOpenAIRequest(endpoint: deepseekEndpoint, apiKey: settings.deepseekApiKey, model: settings.deepseekModel, messages: messages, context: context)
+            request = buildChatCompletionsRequest(endpoint: deepseekEndpoint, apiKey: settings.deepseekApiKey, model: settings.deepseekModel, messages: messages, context: context)
             handleEvent = { payload in
                 self.handleOpenAIEvent(payload, onChunk: chunk, onComplete: completeOnce, onError: { msg in errorOnce(msg, nil) })
             }
@@ -247,7 +247,7 @@ class LLMService: ObservableObject {
         return request
     }
 
-    private func buildOpenAIRequest(endpoint: URL, apiKey: String, model: String, messages: [ChatMessage], context: String) -> URLRequest {
+    private func buildChatCompletionsRequest(endpoint: URL, apiKey: String, model: String, messages: [ChatMessage], context: String) -> URLRequest {
         var apiMessages: [[String: Any]] = [
             ["role": "system", "content": systemPrompt]
         ]
@@ -274,12 +274,20 @@ class LLMService: ObservableObject {
             }
         }
 
-        let body: [String: Any] = [
+        // OpenAI 新模型（GPT-5.6 / o-series）使用 max_completion_tokens；
+        // 旧 OpenAI 模型及 DeepSeek 等兼容接口仍使用 max_tokens
+        let isOpenAINewModel = endpoint == openAIEndpoint &&
+            (model.hasPrefix("gpt-5.6") || model.hasPrefix("o1") || model.hasPrefix("o3") || model.hasPrefix("o4"))
+        var body: [String: Any] = [
             "model": model,
             "stream": true,
-            "max_tokens": 4096,
             "messages": apiMessages
         ]
+        if isOpenAINewModel {
+            body["max_completion_tokens"] = 4096
+        } else {
+            body["max_tokens"] = 4096
+        }
 
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
@@ -432,11 +440,13 @@ class StreamDelegate: NSObject, URLSessionDataDelegate {
     private let onEvent: (String) -> Void
     private let onComplete: () -> Void
     private let onError: (String, Error?) -> Void
+    private let onRetryableError: () -> Bool
 
-    init(onEvent: @escaping (String) -> Void, onComplete: @escaping () -> Void, onError: @escaping (String, Error?) -> Void) {
+    init(onEvent: @escaping (String) -> Void, onComplete: @escaping () -> Void, onError: @escaping (String, Error?) -> Void, onRetryableError: @escaping () -> Bool = { false }) {
         self.onEvent = onEvent
         self.onComplete = onComplete
         self.onError = onError
+        self.onRetryableError = onRetryableError
     }
 
     private func log(_ message: String) {

@@ -82,8 +82,13 @@ struct StandupView: View {
         .background(Color(NSColor.windowBackgroundColor))
         .onAppear {
             loadMessages(for: selectedDate)
-            if isToday && messages.isEmpty {
-                startStandup()
+            if isToday {
+                if messages.isEmpty {
+                    startStandup()
+                } else if messages.last?.role == .user {
+                    // 上次请求未收到回复，自动补发
+                    fetchReply()
+                }
             }
             inputFocused = true
         }
@@ -289,10 +294,20 @@ struct StandupView: View {
         messages = session.sortedMessages.map { sm in
             ChatMessage(role: sm.role == "user" ? .user : .assistant, content: sm.content)
         }
+
+        // 丢弃末尾的空 assistant 占位消息（上次请求未完成留下的残留）
+        while let last = messages.last, last.role == .assistant,
+              last.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            messages.removeLast()
+        }
     }
 
     private func saveCurrentMessages(for date: Date? = nil) {
-        guard !messages.isEmpty else { return }
+        // 过滤掉空的 assistant 占位消息（流式未完成的残留），避免污染持久化数据
+        let messagesToSave = messages.filter { msg in
+            !(msg.role == .assistant && msg.content.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        }
+        guard !messagesToSave.isEmpty else { return }
 
         let targetDate = date ?? selectedDate
         let key = StandupSession.dateKey(from: targetDate)
@@ -311,7 +326,7 @@ struct StandupView: View {
             modelContext.insert(session)
         }
 
-        for (i, msg) in messages.enumerated() {
+        for (i, msg) in messagesToSave.enumerated() {
             let sm = SessionMessage(
                 role: msg.role == .user ? "user" : "assistant",
                 content: msg.content,

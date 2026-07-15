@@ -29,6 +29,9 @@ enum LLMProvider: String, CaseIterable {
             ]
         case .openAI:
             return [
+                "gpt-5.6-sol",
+                "gpt-5.6-terra",
+                "gpt-5.6-luna",
                 "gpt-4.1",
                 "gpt-4.1-mini",
                 "gpt-4o",
@@ -248,7 +251,7 @@ class AppSettings: ObservableObject {
         deepseekApiKey = defaults.string(forKey: "deepseekApiKey") ?? ""
 
         claudeModel = defaults.string(forKey: "claudeModel") ?? "claude-sonnet-4-6"
-        openAIModel = defaults.string(forKey: "openAIModel") ?? "gpt-4.1"
+        openAIModel = defaults.string(forKey: "openAIModel") ?? "gpt-5.6-terra"
         geminiModel = defaults.string(forKey: "geminiModel") ?? "gemini-2.5-flash"
         deepseekModel = defaults.string(forKey: "deepseekModel") ?? "deepseek-v4-flash"
 
@@ -281,7 +284,7 @@ class AppSettings: ObservableObject {
             claudeModel = "claude-sonnet-4-6"
         }
         if !LLMProvider.openAI.availableModels.contains(openAIModel) {
-            openAIModel = "gpt-4.1"
+            openAIModel = "gpt-5.6-terra"
         }
         if !LLMProvider.gemini.availableModels.contains(geminiModel) {
             geminiModel = "gemini-2.5-flash"
